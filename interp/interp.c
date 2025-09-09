@@ -15,6 +15,8 @@
  *
  *
  */
+#define _GNU_SOURCE
+#include <sched.h>
 
 #include "queue.h"
 
@@ -184,7 +186,7 @@ int main(int argc, char **argv) {
 	thread_args *t_args;
 	n_procs = sysconf( _SC_NPROCESSORS_ONLN );//GetCPUCount();
 #ifdef SET_AFFINITY
-	unsigned long int affinity_mask;
+	cpu_set_t affinity_mask;
 #endif
 	pthread_t *threads;
 	FILE *fp, *pla;
@@ -256,8 +258,9 @@ int main(int argc, char **argv) {
 
 		//printf("Criando thread: %d\n", i);fflush(stdout);
 #ifdef SET_AFFINITY
-		affinity_mask = 1 << (i%n_av_procs);
-	       	if (sched_setaffinity(0, sizeof(affinity_mask), &affinity_mask) < 0) 
+	CPU_ZERO(&affinity_mask);
+	CPU_SET(i % n_av_procs, &affinity_mask);
+	if (sched_setaffinity(0, sizeof(affinity_mask), &affinity_mask) < 0)       	
 				perror("sched_setaffinity");
 #endif
 
