@@ -82,8 +82,3 @@ The following publications describe the TALM model and the Trebuchet runtime in 
 
 These references explain the programming model, the speculative execution mechanisms, and the experimental setups that motivated this codebase.
 
-## Notes & next steps
-
-- All Python tooling now targets Python 3 (tested with 3.13); make sure `python3` resolves to a recent interpreter when invoking Couillard or FlowASM scripts.
-- Many files still contain Portuguese debug messages and TODOs. Keeping an eye on `DEBUG_*` defines (see `interp/Makefile`) helps when instrumenting runs.
-- Because the tree predates packaging, you can treat the three top-level directories as independent projects, but the quickest way to experiment is through the sample Makefiles under `Couillard/examples`.
