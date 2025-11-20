@@ -78,7 +78,7 @@ Other ready-to-use samples:
 The following publications describe the TALM model and the Trebuchet runtime in detail:
 
 1. **Tiago A. O. Alves; Leandro A. J. Marzulo; Guido Araujo.** “Trebuchet: A Multi-threaded Implementation of the TALM Model.” *Proceedings of the International Symposium on Computer Architecture and High Performance Computing (SBAC-PAD)*, 2007.
-2. **Tiago A. O. Alves.** “Trebuchet: Uma Máquina Virtual Dataflow com Suporte à Especulação.” M.Sc. Thesis, COPPE/UFRJ, 2008.
+2. **Tiago A. O. Alves.** “DATAFLOW EXECUTION FOR RELIABILITY AND PERFORMANCE IN CURRENT HARDWARE.” Doctoral Thesis, COPPE/UFRJ, 2014.
 
 These references explain the programming model, the speculative execution mechanisms, and the experimental setups that motivated this codebase.
 
