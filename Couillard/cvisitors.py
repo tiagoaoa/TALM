@@ -59,13 +59,13 @@ class Visitor:
     def warning(self, str):
         """Output a non-fatal compilation warning."""
         
-        print "warning: %s" % str
+        print("warning: %s" % str)
         self.warnings += 1
 
     def error(self, str):
         """Output a fatal compilation error."""
         
-        print "error: %s" % str
+        print("error: %s" % str)
         self.errors += 1
 
     def has_errors(self):
@@ -103,20 +103,20 @@ class ASTPrinterVisitor(Visitor):
         # Print out the name of the node's class.
         self.p('+ ' + node.__class__.__name__)
 
-	# If the node is a type, print qualifier and storageclass
-	if isinstance(node, cparse.Type):
-		if len(node.qualifiers.nodes):
-			self.pSubnodeInfo(node.qualifiers, "Qualifiers")
-		if len(node.storageclass.nodes):
-			self.pSubnodeInfo(node.storageclass, "StorageClass")		
-		if len(node.qualifiers.nodes):
-		    	self.p("  Modifier-string: %s" % node.qualifiers.get_string())
-		if len(node.storageclass.nodes):
-		    	self.p("  StorageClass-string: %s" % node.storageclass.get_string())
+        # If the node is a type, print qualifier and storageclass
+        if isinstance(node, cparse.Type):
+                if len(node.qualifiers.nodes):
+                        self.pSubnodeInfo(node.qualifiers, "Qualifiers")
+                if len(node.storageclass.nodes):
+                        self.pSubnodeInfo(node.storageclass, "StorageClass")            
+                if len(node.qualifiers.nodes):
+                        self.p("  Modifier-string: %s" % node.qualifiers.get_string())
+                if len(node.storageclass.nodes):
+                        self.p("  StorageClass-string: %s" % node.storageclass.get_string())
 
         # If the node has a type associated with it,
         # print the string of the type.
-        if node.__dict__.has_key("type"):
+        if "type" in node.__dict__:
             self.p("  Type-string: %s" % node.type.get_string())
 
         # Find all attributes of the node that are ints or
@@ -151,7 +151,7 @@ class ASTPrinterVisitor(Visitor):
 
     def vId(self, node):
         self.pNodeInfo(node)
-	self.pSubnodeInfo(node.type,"Type")
+        self.pSubnodeInfo(node.type,"Type")
 
     def vUnaryop(self, node):
         self.pNodeInfo(node)
@@ -174,7 +174,7 @@ class ASTPrinterVisitor(Visitor):
     def vNodeList(self, node):
         self.pNodeInfo(node)
         self.indent()
-	self.p("Size: %d" % len(node.nodes))
+        self.p("Size: %d" % len(node.nodes))
         self._visitList(node.nodes)
         self.unindent()
 
@@ -185,11 +185,11 @@ class ASTPrinterVisitor(Visitor):
 
     def vBaseType(self, node):
         self.pNodeInfo(node)
-	self.pSubnodeInfo(node.child, "Child:")
+        self.pSubnodeInfo(node.child, "Child:")
 
     def vTypeModifier(self, node):
         self.pNodeInfo(node)
-	self.pSubnodeInfo(node.child, "Child:")
+        self.pSubnodeInfo(node.child, "Child:")
 
     def vQualifier(self, node):
         self.pNodeInfo(node)
@@ -213,8 +213,8 @@ class ASTPrinterVisitor(Visitor):
     def vDeclaration(self, node):
         self.pNodeInfo(node)
         self.pSubnodeInfo(node.type, "Type")
-	if node.is_initialized:
-		self.pSubnodeInfo(node.init, "Init")
+        if node.is_initialized:
+                self.pSubnodeInfo(node.init, "Init")
 
     def vReturnStatement(self, node):
         self.pNodeInfo(node)
@@ -273,7 +273,7 @@ class ASTPrinterVisitor(Visitor):
         self.pSubnodeInfo(node.out, "Outputs")
 
     def vBlock(self, node):
-	self.pNodeInfo(node)
+        self.pNodeInfo(node)
 
 #  ---------------------------------------------------------------
 #  SYMBOL TABLE GENERATION
@@ -324,7 +324,7 @@ class Symtab:
         declaration or definition of a function/variable (e.g.,
         Declaration or FunctionDefn)."""
         
-        if self.entries.has_key(name):
+        if name in self.entries:
             if not self.entries[name].extern:
                 raise Symtab.SymbolDefinedError()
             elif self.entries[name].type.get_string() != \
@@ -337,7 +337,7 @@ class Symtab:
         table, recursing upwards through parent symbol tables if it is
         not found in the current one."""
 
-        if self.entries.has_key(name):
+        if name in self.entries:
             return self.entries[name]
         else:
             if self.parent != None:
@@ -432,8 +432,8 @@ class SymtabVisitor(Visitor):
 
     def vDeclaration(self, node):
         self._add_symbol(node)
-	if node.is_initialized:
-		node.init.accept(self)
+        if node.is_initialized:
+                node.init.accept(self)
 
     def vReturnStatement(self, node):
         node.expr.accept(self)
@@ -519,120 +519,120 @@ class TypeCheckVisitor(Visitor):
             pass
 
     def _check_basetype(self, var, type, function=0):
-	"""Base Type has to be unique. Check!"""
-	if function:
-		t="Function"
-	else:
-		t="Variable"
-	bt = type
-	nbt=0
-	sbt=""
-	while not(isinstance(bt, cparse.NullNode)):
-		if (isinstance(bt, cparse.BaseType)):
-			nbt += 1
-			sbt += bt.get_string() + " "
-		bt = bt.child
-	if nbt>1:
-		self.error("%s %s has more than one base type (%s)." % (t, var.name, sbt))
+        """Base Type has to be unique. Check!"""
+        if function:
+                t="Function"
+        else:
+                t="Variable"
+        bt = type
+        nbt=0
+        sbt=""
+        while not(isinstance(bt, cparse.NullNode)):
+                if (isinstance(bt, cparse.BaseType)):
+                        nbt += 1
+                        sbt += bt.get_string() + " "
+                bt = bt.child
+        if nbt>1:
+                self.error("%s %s has more than one base type (%s)." % (t, var.name, sbt))
 
     def _check_modifiers(self, var, type, function=0):
-	"""Check Modifiers
-	Allowed:
-	(signed | unsigned) (long) long int
-	(signed | unsigned) short int
-	(signed | unsigned) char
-	float (no modifiers)
-	long double
-	void only for functions"""
+        """Check Modifiers
+        Allowed:
+        (signed | unsigned) (long) long int
+        (signed | unsigned) short int
+        (signed | unsigned) char
+        float (no modifiers)
+        long double
+        void only for functions"""
 
-	if function:
-		t="Function"
-	else:
-		t="Variable"
+        if function:
+                t="Function"
+        else:
+                t="Variable"
 
-	csigned = 0
-	cunsigned = 0
-	clong = 0
-	cshort = 0
-	bt = type.get_base_type()
-	
-	t=type
-	while not(isinstance(t, cparse.NullNode)):
-		if t.get_outer_string()=="long":
-			clong+=1
-		elif t.get_outer_string()=="short":
-			cshort+=1
-		elif t.get_outer_string()=="signed":
-			csigned+=1
-		elif t.get_outer_string()=="unsigned":
-			cunsigned+=1
-		t = t.child
-	
-	if bt=="int":
-		if clong>2:
-			self.error("%s %s has more 2 long modifiers." % (t, var.name))
-		elif cshort>1:
-			self.error("%s %s has more 1 short modifiers." % (t, var.name))
-		elif clong and cshort:
-			self.error("%s %s has both long short modifiers." % (t, var.name))
-		elif csigned and cunsigned:
-			self.error("%s %s has both signed and unsigned modifiers." % (t, var.name))
-		else:
-			pass
-	elif bt=="char":
-		if clong:
-			self.error("%s %s can not have long modifiers. " % (t, var.name))
-		elif cshort:
-			self.error("%s %s can not have short modifiers. " % (t, var.name))
-		elif csigned and cunsigned:
-			self.error("%s %s has both signed and unsigned modifiers." % (t, var.name))
-		else:
-			pass
-	elif bt=="float":
-		if clong:
-			self.error("%s %s can not have long modifiers. " % (t, var.name))
-		elif cshort:
-			self.error("%s %s can not have short modifiers. " % (t, var.name))
-		elif csigned:
-			self.error("%s %s can not have signed modifiers. " % (t, var.name))
-		elif cunsigned:
-			self.error("%s %s can not have unsigned modifiers. " % (t, var.name))
-		else:
-			pass
-	elif bt=="double":
-		if clong>1:
-			self.error("%s %s can only have 1 long modifier. " % (t, var.name))
-		elif cshort:
-			self.error("%s %s can not have short modifiers. " % (t, var.name))
-		elif csigned:
-			self.error("%s %s can not have signed modifiers. " % (t, var.name))
-		elif cunsigned:
-			self.error("%s %s can not have unsigned modifiers. " % (t, var.name))
-		else:
-			pass
-	elif bt=="void":
-		if not(function):
-			self.error("%s %s can not be void. " % (t, var.name))
-		elif clong:
-			self.error("%s %s can not have long modifiers. " % (t, var.name))
-		elif cshort:
-			self.error("%s %s can not have short modifiers. " % (t, var.name))
-		elif csigned:
-			self.error("%s %s can not have signed modifiers. " % (t, var.name))
-		elif cunsigned:
-			self.error("%s %s can not have unsigned modifiers. " % (t, var.name))
-		else:
-			pass
-				
+        csigned = 0
+        cunsigned = 0
+        clong = 0
+        cshort = 0
+        bt = type.get_base_type()
+        
+        t=type
+        while not(isinstance(t, cparse.NullNode)):
+                if t.get_outer_string()=="long":
+                        clong+=1
+                elif t.get_outer_string()=="short":
+                        cshort+=1
+                elif t.get_outer_string()=="signed":
+                        csigned+=1
+                elif t.get_outer_string()=="unsigned":
+                        cunsigned+=1
+                t = t.child
+        
+        if bt=="int":
+                if clong>2:
+                        self.error("%s %s has more 2 long modifiers." % (t, var.name))
+                elif cshort>1:
+                        self.error("%s %s has more 1 short modifiers." % (t, var.name))
+                elif clong and cshort:
+                        self.error("%s %s has both long short modifiers." % (t, var.name))
+                elif csigned and cunsigned:
+                        self.error("%s %s has both signed and unsigned modifiers." % (t, var.name))
+                else:
+                        pass
+        elif bt=="char":
+                if clong:
+                        self.error("%s %s can not have long modifiers. " % (t, var.name))
+                elif cshort:
+                        self.error("%s %s can not have short modifiers. " % (t, var.name))
+                elif csigned and cunsigned:
+                        self.error("%s %s has both signed and unsigned modifiers." % (t, var.name))
+                else:
+                        pass
+        elif bt=="float":
+                if clong:
+                        self.error("%s %s can not have long modifiers. " % (t, var.name))
+                elif cshort:
+                        self.error("%s %s can not have short modifiers. " % (t, var.name))
+                elif csigned:
+                        self.error("%s %s can not have signed modifiers. " % (t, var.name))
+                elif cunsigned:
+                        self.error("%s %s can not have unsigned modifiers. " % (t, var.name))
+                else:
+                        pass
+        elif bt=="double":
+                if clong>1:
+                        self.error("%s %s can only have 1 long modifier. " % (t, var.name))
+                elif cshort:
+                        self.error("%s %s can not have short modifiers. " % (t, var.name))
+                elif csigned:
+                        self.error("%s %s can not have signed modifiers. " % (t, var.name))
+                elif cunsigned:
+                        self.error("%s %s can not have unsigned modifiers. " % (t, var.name))
+                else:
+                        pass
+        elif bt=="void":
+                if not(function):
+                        self.error("%s %s can not be void. " % (t, var.name))
+                elif clong:
+                        self.error("%s %s can not have long modifiers. " % (t, var.name))
+                elif cshort:
+                        self.error("%s %s can not have short modifiers. " % (t, var.name))
+                elif csigned:
+                        self.error("%s %s can not have signed modifiers. " % (t, var.name))
+                elif cunsigned:
+                        self.error("%s %s can not have unsigned modifiers. " % (t, var.name))
+                else:
+                        pass
+                                
     def _check_storageclass(self, var, type, function=0):
-	"""Storage Class has to be unique. Check!"""
-	if function:
-		t="Function"
-	else:
-		t="Variable"
-	if len(type.storageclass.nodes) > 1:
-		self.error("%s %s has more than one Storage Class (%s)." % (t, var.name, type.storageclass.get_string()))
-	
+        """Storage Class has to be unique. Check!"""
+        if function:
+                t="Function"
+        else:
+                t="Variable"
+        if len(type.storageclass.nodes) > 1:
+                self.error("%s %s has more than one Storage Class (%s)." % (t, var.name, type.storageclass.get_string()))
+        
 
     def _compare_types(self, name_str, from_type, to_type, raise_errors=1):
         """Compares the two types to see if it's possible to perform a
@@ -648,48 +648,48 @@ class TypeCheckVisitor(Visitor):
         if (from_str != to_str):
             if from_str == 'char':
                 if to_str == 'int':
-			pass
-		elif to_str == 'long int':
+                        pass
+                elif to_str == 'long int':
                     pass
-		elif to_str == 'long long int':
+                elif to_str == 'long long int':
                     pass
-		elif to_str == 'float':
+                elif to_str == 'float':
                     pass
-		elif to_str == 'double':
+                elif to_str == 'double':
                     pass
                 else:
                     conflict = ERROR
             elif from_str == 'int':
-		if to_str == 'long int':
-			pass
-		elif to_str == 'long long int':
-			pass
-		elif to_str == 'float':
+                if to_str == 'long int':
+                        pass
+                elif to_str == 'long long int':
+                        pass
+                elif to_str == 'float':
                     pass
-		elif to_str == 'double':
+                elif to_str == 'double':
                     pass
                 elif to_str == 'char':
                     conflict = WARNING
-		elif to_str == 'signed char':
+                elif to_str == 'signed char':
                     conflict = WARNING
-		elif to_str == 'unsigned char':
+                elif to_str == 'unsigned char':
                     conflict = WARNING
                 else:
                     conflict = ERROR
-	    elif from_str == 'long int':
-		if to_str == 'int':
-			conflict = WARNING
-		elif to_str == 'long long int':
-			pass
+            elif from_str == 'long int':
+                if to_str == 'int':
+                        conflict = WARNING
+                elif to_str == 'long long int':
+                        pass
                 elif to_str == 'char':
                     conflict = WARNING
                 else:
                     conflict = ERROR
-	    elif from_str == 'long long int':
-		if to_str == 'int':
-			conflict = WARNING
-		elif to_str == 'long int':
-			conflict = WARNING
+            elif from_str == 'long long int':
+                if to_str == 'int':
+                        conflict = WARNING
+                elif to_str == 'long int':
+                        conflict = WARNING
                 elif to_str == 'char':
                     conflict = WARNING
                 else:
@@ -766,7 +766,7 @@ class TypeCheckVisitor(Visitor):
         self._visitList(node.nodes)
 
     def vCompoundStatement(self, node):
-	node.declaration_list.accept(self)
+        node.declaration_list.accept(self)
         node.statement_list.accept(self)
 
     def vReturnStatement(self, node):
@@ -812,9 +812,9 @@ class TypeCheckVisitor(Visitor):
                 arg.coerce_to_type = arg.type
 
     def vFunctionDefn(self, node):
-	self._check_storageclass(node, node.type.child, 1)
-	self._check_basetype(node, node.type.child, 1)
-	self._check_modifiers(node, node.type.child, 1)
+        self._check_storageclass(node, node.type.child, 1)
+        self._check_basetype(node, node.type.child, 1)
+        self._check_modifiers(node, node.type.child, 1)
         self.curr_func = node
         node.body.accept(self)
 
@@ -839,14 +839,14 @@ class TypeCheckVisitor(Visitor):
 
     def vSuperInstruction(self, node):
         node.inp.accept(self)
-	node.out.accept(self)
+        node.out.accept(self)
 
     def vDeclaration(self, node):
-	self._check_storageclass(node, node.type)
-	self._check_basetype(node, node.type)
-	self._check_modifiers(node, node.type)
-	if node.is_initialized:
-		node.init.accept(self)
+        self._check_storageclass(node, node.type)
+        self._check_basetype(node, node.type)
+        self._check_modifiers(node, node.type)
+        if node.is_initialized:
+                node.init.accept(self)
 
 #  ---------------------------------------------------------------
 #  FLOW CONTROL

@@ -32,7 +32,7 @@ class Node:
         """Returns whether the node has an address (i.e., is a valid
         lvalue)."""
         
-        return self.__dict__.has_key("has_addr")
+        return "has_addr" in self.__dict__
 
     def set_has_address(self):
         """Tells the node that has an address (is an lvalue).
@@ -118,14 +118,14 @@ class Id(Node):
     def __init__(self, name, lineno, index=-1, s=False, a=False, op="", val=0, local=False, starter=False, last=False):
         self.name = name
         self.lineno = lineno
-	self.index = index
-	self.s = s
-	self.a = a
-	self.op = op
-	self.val = val
-	self.local = local
-	self.starter = starter
-	self.last = last
+        self.index = index
+        self.s = s
+        self.a = a
+        self.op = op
+        self.val = val
+        self.local = local
+        self.starter = starter
+        self.last = last
 
     def set_index(self, index):
         self.index = index
@@ -149,7 +149,7 @@ class Const(Node):
     
     def __init__(self, value, type):
         self.value = value
-	print self.value
+        print(self.value)
         self.type = type
 
     def calculate(self):
@@ -163,9 +163,9 @@ def _get_calculated(node):
     returning a Const node if it was able to convert the expression.
     If the expression isn't a constant expression like "5+3", then
     this function just returns the node unmodified."""
-    typedic={"<type 'int'>":"int", "<type 'float'>":"float"}
+    typedic={"<class 'int'>":"int", "<class 'float'>":"float"}
     result = node.calculate()
-    if result != None and typedic.has_key(str(type(result))):
+    if result != None and str(type(result)) in typedic:
         return Const(result, BaseType(typedic[str(type(result))]))
     else:
         return node
@@ -221,7 +221,7 @@ class Binop(Node):
         right = self.right.calculate()
         if left != None and right != None:
             x = eval("%s %s %s" % (str(left), self.op, str(right)))
-	    return x
+            return x
         else:
             return None
 
@@ -229,7 +229,7 @@ class IfStatement(Node):
     """An if/then/else statement (Else is optional)."""
     
     def __init__(self, expr, then_stmt, else_stmt=None):
-	if else_stmt == None:
+        if else_stmt == None:
             else_stmt = NullNode()
         self.expr = expr
         self.then_stmt = then_stmt
@@ -246,7 +246,7 @@ class CaseStatement(Node):
     """A case statement."""
     
     def __init__(self, stmt, const=None):
-	if const == None:
+        if const == None:
             const = NullNode()
         self.const = const
         self.stmt = stmt
@@ -255,7 +255,7 @@ class DefaultStatement(CaseStatement):
     """A Default case statement."""
     
     def __init__(self, stmt):
-	CaseStatement.__init__(self, stmt)
+        CaseStatement.__init__(self, stmt)
 
 
 class BreakStatement(Node):
@@ -387,7 +387,7 @@ class Declaration(Node):
         if type == None:
             type = NullNode()
         self.type = type
-	self.name = name
+        self.name = name
         self.is_used = 0
         self.is_initialized = 0
 
@@ -409,9 +409,9 @@ class Declaration(Node):
 class SuperInstruction(Node):
     """A super-instruction statement."""
     def __init__(self, body, inp=None, out=None):
-	    self.inp = inp
-	    self.out = out
-	    self.body = body
+            self.inp = inp
+            self.out = out
+            self.body = body
 
 class ParInstruction(SuperInstruction):
     """A parallel super-instruction."""
@@ -424,7 +424,7 @@ class ParInstruction(SuperInstruction):
 class Block(Node):
     """A block statement."""
     def __init__(self, body):
-	    self.body = body
+            self.body = body
         
 #  ---------------------------------------------------------------
 #  ABSTRACT SYNTAX TREE - TYPE SYSTEM
@@ -461,11 +461,11 @@ class Type(Node):
 
     def get_base_type(self):
         """Get the base (innermost) type of a type."""
-	if self.child.is_null():
+        if self.child.is_null():
             if isinstance(self, BaseType):
-		return self.get_string()
-	    else:
-		return "none"
+                return self.get_string()
+            else:
+                return "none"
         else:
             self.child.get_base_type()
 
@@ -535,8 +535,8 @@ class TypeModifier(Type):
 class QualifierList(NodeList):
     def get_string(self):
         s = ""
-	for q in self.nodes:
-		s+=q.name+" "
+        for q in self.nodes:
+                s+=q.name+" "
         return "%s" % s
 
 class Qualifier(Node):
@@ -544,21 +544,21 @@ class Qualifier(Node):
     This is an abstract class."""
 
     def __init__(self, qualifier):
-	self.name = qualifier
+        self.name = qualifier
 
 
 class ConstQualifier(Qualifier):
-	pass
+        pass
 
 
 class VolatileQualifier(Qualifier):
-	pass
+        pass
 
 class StorageClassList(NodeList):
     def get_string(self):
         s = ""
-	for q in self.nodes:
-		s+=q.name+" "
+        for q in self.nodes:
+                s+=q.name+" "
         return "%s" % s
 
 class StorageClass(Node):
@@ -566,37 +566,37 @@ class StorageClass(Node):
     This is an abstract class."""
 
     def __init__(self, name):
-	self.name = name
+        self.name = name
 
 class TypedefStorageClass(StorageClass):
-	pass
+        pass
 
 class ExternStorageClass(StorageClass):
-	pass
+        pass
 
 class StaticStorageClass(StorageClass):
-	pass
+        pass
 
 class AutoStorageClass(StorageClass):
-	pass
+        pass
 
 class RegisterStorageClass(StorageClass):
-	pass
+        pass
 
 class ParoutStorageClass(StorageClass):
-	pass
+        pass
 
 class ArrayType(Type):
     """A type representing an array"""
 
     def __init__(self, size, child=None):
         Type.__init__(self, child)
-	self.dim = 1
-	self.dim_sizes = [ size ]
+        self.dim = 1
+        self.dim_sizes = [ size ]
 
     def expand(self, size):
-	self.dim+=1
-	self.dim_sizes.append(size)
+        self.dim+=1
+        self.dim_sizes.append(size)
 
     def get_string(self):
         dim_str = ""
@@ -625,13 +625,13 @@ class ArrayType(Type):
         """Set the base (innermost) type of a type.  For instance,
         calling this with a pointer(int) type on a pointer() type
         will give you a pointer(pointer(int)). In the case of an 
-	array, we need to expand the number of dimensions"""
+        array, we need to expand the number of dimensions"""
         
-	if not(isinstance(type, NullNode)) and type.is_array():
-		self.dim+=1
-		self.dim_sizes.append(type.dim_sizes[0])
-	else:
-        	Type.set_base_type(self, type)
+        if not(isinstance(type, NullNode)) and type.is_array():
+                self.dim+=1
+                self.dim_sizes.append(type.dim_sizes[0])
+        else:
+                Type.set_base_type(self, type)
 
 class FunctionType(Type):
     """A type representing a function (for function prototypes and
@@ -773,28 +773,28 @@ def p_declaration_specifiers_06(t):
 
 def p_type_specifier_01(t):
      '''type_specifier : VOID
-	              | CHAR
-	              | INT
-	              | FLOAT
-	              | DOUBLE'''
+                      | CHAR
+                      | INT
+                      | FLOAT
+                      | DOUBLE'''
      t[0] = BaseType(t[1])
 
 def p_type_specifier_02(t):
      '''type_specifier : SHORT
-	              | LONG
-	              | SIGNED
-	              | UNSIGNED'''
+                      | LONG
+                      | SIGNED
+                      | UNSIGNED'''
      t[0] = TypeModifier(t[1])
 
 
 #----------------LIMEI-------------------------------------------
 #def p_type_specifier_03(t):
 #    '''type_specifier : struct_or_union_specifier
-#	              | enum_specifier'''
+#                     | enum_specifier'''
 #                      # | TYPE_NAME
 #    t[0] = t[1]
           
-	  # FALTA TYPE_NAME
+          # FALTA TYPE_NAME
 
 
 #def p_struct_or_union_specifier(t):
@@ -853,7 +853,7 @@ def p_type_specifier_02(t):
 #    '''enumerator : ID
 #                  | ID ASSIGN constant_expression'''
 #--------------------------------------------------------------------
-	
+        
 def p_storage_class_specifier_01(t):
      '''storage_class_specifier : TYPEDEF'''
      t[0] = TypedefStorageClass(t[1])
@@ -923,10 +923,10 @@ def p_pointer_03(t):
 def p_pointer_04(t):
      '''pointer : ASTERISK type_qualifier_list pointer'''
      if isinstance(t[3], QualifierList):
-	t[3].add(t[2])
-	t[0] = t[3]
+        t[3].add(t[2])
+        t[0] = t[3]
      else:
-	t[0] = t[2]
+        t[0] = t[2]
 
 def p_declaration_list_02(t):
      '''declaration_list : declaration'''
@@ -944,7 +944,7 @@ def p_declaration_01(t):
 def p_declaration_02(t):
      '''declaration : declaration_specifiers init_declarator_list SEMICOLON'''
      for dec in t[2].nodes:
-     	dec.set_base_type(t[1])
+        dec.set_base_type(t[1])
      t[0] = t[2]
 
 def p_init_declarator_list_01(t):
@@ -1233,35 +1233,35 @@ def p_unary_expression_01(t):
      t[0] = t[1]
 
 def p_unary_expression_02(t):
-     '''unary_expression	: DOUBLE_PLUS unary_expression'''
+     '''unary_expression        : DOUBLE_PLUS unary_expression'''
      t[0] = _get_calculated(Binop(t[2], Const(1, BaseType('int')), '+'))
 
 def p_unary_expression_03(t):
-     '''unary_expression	: DOUBLE_MINUS unary_expression'''
+     '''unary_expression        : DOUBLE_MINUS unary_expression'''
      t[0] = _get_calculated(Binop(t[2], Const(1, BaseType('int')), '-'))
 
 def p_unary_expression_04(t):
-     '''unary_expression	: AMPERSAND cast_expression'''
+     '''unary_expression        : AMPERSAND cast_expression'''
      t[0] = AddrOf(t[2])
 
 def p_unary_expression_05(t):
-     '''unary_expression	: ASTERISK cast_expression'''
+     '''unary_expression        : ASTERISK cast_expression'''
      t[0] = Pointer(t[2])
 
 def p_unary_expression_06(t):
-     '''unary_expression	: PLUS cast_expression'''
+     '''unary_expression        : PLUS cast_expression'''
      t[0] = t[2]
 
 def p_unary_expression_07(t):
-     '''unary_expression	: MINUS cast_expression'''
+     '''unary_expression        : MINUS cast_expression'''
      t[0] = _get_calculated(Negative(t[2]))
 
 def p_unary_expression_08(t):
-     '''unary_expression	: TILDE cast_expression'''
+     '''unary_expression        : TILDE cast_expression'''
      t[0] = _get_calculated(BinNot(t[2]))
 
 def p_unary_expression_09(t):
-     '''unary_expression	: EXCLAMATION cast_expression'''
+     '''unary_expression        : EXCLAMATION cast_expression'''
     # horrible hack for the '!' operator... Just insert an
     # (expr == 0) into the AST.
      t[0] = _get_calculated(Binop(t[2], Const(0, BaseType('int')), '=='))
@@ -1269,10 +1269,10 @@ def p_unary_expression_09(t):
 
 #----------------LIMEI---------------------------------------------------
 #def p_unary_expression_10(t):
-#    '''unary_expression	: SIZEOF unary_expression'''
+#    '''unary_expression        : SIZEOF unary_expression'''
 
 #def p_unary_expression_11(t):
-#    '''unary_expression	: SIZEOF LPAREN type_name RPAREN'''
+#    '''unary_expression        : SIZEOF LPAREN type_name RPAREN'''
 #------------------------------------------------------------------------
 
 def p_postfix_expression_01(t):
@@ -1320,7 +1320,7 @@ def p_primary_expression_02(t):
 
 def p_primary_expression_03(t):
      '''primary_expression : FNUMBER'''
-     print "float!!!"
+     print("float!!!")
      t[0] = Const(float(t[1]), BaseType('float'))
 
 def p_primary_expression_04(t):
@@ -1365,7 +1365,7 @@ def p_direct_declarator_04(t):
 def p_direct_declarator_05(t):
      '''direct_declarator : direct_declarator LBRACKET constant_expression RBRACKET'''
      t[1].add_type(ArrayType(t[3]))
-     t[0] = t[1]	
+     t[0] = t[1]        
 
 def p_direct_declarator_06(t):
      '''direct_declarator : direct_declarator LBRACKET RBRACKET'''
@@ -1467,12 +1467,12 @@ def p_super_statement_03(t):
     t[0] = ReduceInstruction(t[11], t[5], t[9])
 
 def p_super_output_statement_01(t):
-	'''super_output_statement : OUTPUT LPAREN super_output_list RPAREN'''
-	t[0] = t[3]
+        '''super_output_statement : OUTPUT LPAREN super_output_list RPAREN'''
+        t[0] = t[3]
 
 def p_super_output_statement_02(t):
-	'''super_output_statement : '''
-	t[0] = ArgumentList(None)
+        '''super_output_statement : '''
+        t[0] = ArgumentList(None)
 
 def p_super_output_list_01(t):
     '''super_output_list : ID'''
@@ -1484,12 +1484,12 @@ def p_super_output_list_02(t):
     t[0] = t[1]
 
 def p_super_input_statement_01(t):
-	'''super_input_statement : INPUT LPAREN super_input_list RPAREN'''
-	t[0] = t[3]
+        '''super_input_statement : INPUT LPAREN super_input_list RPAREN'''
+        t[0] = t[3]
 
 def p_super_input_statement_02(t):
-	'''super_input_statement : '''
-	t[0] = ArgumentList(None)
+        '''super_input_statement : '''
+        t[0] = ArgumentList(None)
 
 def p_super_input_list_01(t):
     '''super_input_list : parout_expression'''
@@ -1559,7 +1559,7 @@ def p_block_statement_01(t):
 def p_error(t):
     # print "You've got a syntax error somewhere in your code."
     # print "It could be around line %d." % t.lineno
-    print "Error in line %d." % t.lineno
+    print("Error in line %d." % t.lineno)
      #print "Good luck finding it."
     raise ParseError()
 

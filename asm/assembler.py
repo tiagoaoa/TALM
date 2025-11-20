@@ -20,7 +20,7 @@ from optparse import OptionParser
 def addquotes(match):
 	token = match.group(0)
 
-	if re.match("\w+\[[0-9]+\]", token):
+	if re.match(r"\w+\[[0-9]+\]", token):
 		token = "self." + match.group(0)
 	else:
 		#We shall not add quotes to the representations of function operands. They are solved on their on.
@@ -54,12 +54,12 @@ placement = []
 
 
 if options.num_tasks != None:
-	print "Number of tasks: %d" %int(options.num_tasks)
+	print("Number of tasks: %d" %int(options.num_tasks))
 	preprocessor.setntasks(int(options.num_tasks))
 
 
 if options.autoplace != None:
-	print "Autoplacement enabled."
+	print("Autoplacement enabled.")
 	placer = scheduler.GraphBuilder(int(options.num_tasks))
 	placer.profile = preprocessor.profile
 	placer.outfile = open(options.outfilename + "_auto.pla", "w")
@@ -80,35 +80,35 @@ preprocessed_data = []
 assembler.output = output
 
 for line in file:
-	line = re.sub("//.*", "", line) #remove comments
-	debug.print_debug("INFO", "Original line: " + line.replace('\n', ''))
-	if line.strip(): 
-		if re.search("\w+\(.*\)", line):
-			eval("preprocessor." + line.strip())  #evaluate macros
-		else:
+		line = re.sub("//.*", "", line) #remove comments
+		debug.print_debug("INFO", "Original line: " + line.replace('\n', ''))
+		if line.strip(): 
+			if re.search(r"\w+\(.*\)", line):
+				eval("preprocessor." + line.strip())  #evaluate macros
+			else:
 
-			line = preprocessor.replacemacros(line) 
-			proclines = line.strip().split('\n')
-			#print proclines
-			
-			"""If the preprocessor generated multiple instructions and the placement
-			mode is DYNAMIC, they will each be placed in different PEs, starting from PE
-			preprocessor.current_placement, which is selected with the macro placeinpe(n)"""
+				line = preprocessor.replacemacros(line) 
+				proclines = line.strip().split('\n')
+				#print proclines
+				
+				"""If the preprocessor generated multiple instructions and the placement
+				mode is DYNAMIC, they will each be placed in different PEs, starting from PE
+				preprocessor.current_placement, which is selected with the macro placeinpe(n)"""
 
-			tmpplacement = preprocessor.current_placement
-			for pline in proclines:
-				debug.print_debug("INFO", "Preprocessed line: " + pline)
-				name = re.search("\w+\s+((\w+\[[0-9]+\]|\w+)),", pline).group(1) 
+				tmpplacement = preprocessor.current_placement
+				for pline in proclines:
+					debug.print_debug("INFO", "Preprocessed line: " + pline)
+					name = re.search(r"\w+\s+((\w+\[[0-9]+\]|\w+)),", pline).group(1) 
 
-				preprocessed_data += [pline.strip()]
-			
-				#print "Add name %s" %name 
+					preprocessed_data += [pline.strip()]
+				
+					#print "Add name %s" %name 
 
-				assembler.addname(name)
+					assembler.addname(name)
 
-				placement += [tmpplacement]
-				if preprocessor.placement_mode == "DYNAMIC":
-					tmpplacement += 1 
+					placement += [tmpplacement]
+					if preprocessor.placement_mode == "DYNAMIC":
+						tmpplacement += 1 
 			
 			
 
@@ -122,7 +122,7 @@ debug.print_debug("INFO", "Finished preprocessing stage.")
 for asm in asmers:
 	asm.start()
 
-operands_regexp = "([+-]*([0-9]*\.[0-9]+|[0-9]+)[-+*/]*)|\w+\.\w+|(\w+\[[0-9]+\]|\w+)" 
+operands_regexp = r"([+-]*([0-9]*\.[0-9]+|[0-9]+)[-+*/]*)|\w+\.\w+|(\w+\[[0-9]+\]|\w+)" 
 """Regular expression intended to find:
 	- Constants, such as +0.22, -1, 10 etc
 	- Instruction names
@@ -131,10 +131,10 @@ operands_regexp = "([+-]*([0-9]*\.[0-9]+|[0-9]+)[-+*/]*)|\w+\.\w+|(\w+\[[0-9]+\]
 #TODO: Document the regexp better
 
 #from flowasm import funcao
-print dir(flowasm)
+print(dir(flowasm))
 for line in preprocessed_data:
-	tks = [re.split("\s", line)[0]]
-	startopers = re.search('\s', line).start() + 1
+	tks = [re.split(r"\s", line)[0]]
+	startopers = re.search(r'\s', line).start() + 1
 	#print tks
 	tks += [tk for tk in assembler.evaltoken(re.sub(operands_regexp, addquotes, line[startopers:]))]
 	
@@ -164,10 +164,5 @@ placefile.write("%d\n" %len(placement))
 for inst in placement:
 	placefile.write("%d\n" %inst)
 placefile.close()
-
-
-
-
-
 
 

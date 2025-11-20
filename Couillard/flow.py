@@ -15,7 +15,7 @@ import sys
 
 #works only for dicts
 def graph_build_error(error):
-	print error
+	print(error)
 	
 def semideepcopy(dictio):
 	out = {}
@@ -24,7 +24,7 @@ def semideepcopy(dictio):
 	return out
 
 def start_debug(n):
-	if os.environ.has_key("DEBUG") and os.environ["DEBUG"] == n:
+	if "DEBUG" in os.environ and os.environ["DEBUG"] == n:
 		pdb.set_trace()	
 class DataNode(cparse.Node):
 
@@ -91,7 +91,7 @@ class InstIncTag(DataNode):
 
 		self.visited = False #indicates if it has already been visited by isparallel(), eliminating cycles 
 	def set_overriden(self, steer_level=None):
-		print "DEBUG Overriding %s %s" %(self.overriden_flags, steer_level)
+		print("DEBUG Overriding %s %s" %(self.overriden_flags, steer_level))
 		if steer_level > 0:
 			if len(self.overriden_flags) == 1: 
 			#if we are in an if/then or if/else clause and this is the first time we override the inctag inside this clause, push the trace level (control depth) so we know when to pop
@@ -99,7 +99,7 @@ class InstIncTag(DataNode):
 		else:
 			self.overriden_flags[0] = True
 
-		print "DEBUG Result %s" %self.overriden_flags
+		print("DEBUG Result %s" %self.overriden_flags)
 	def reset_overriden(self):
 		self.overriden_flags[-1] = False
 	def push_overriden(self):
@@ -327,11 +327,11 @@ class DataFlowGenVisitor(Visitor):
 
 		
 		if node.op == "=":
-			print "Creating signal %s" %left.name	
+			print("Creating signal %s" %left.name	)
 			signals = self.signals[left.name] = right.accept(self)
 			#just one signal, but the variable is named in plural because it's a list
 			steer_trace_depth = len(self.trace_steers)	
-			if self.loop_level > 0 and self.inctags[-1].has_key(left.name):
+			if self.loop_level > 0 and left.name in self.inctags[-1]:
 				inctag = self.inctags[-1][left.name]
 				inctag.set_overriden(steer_trace_depth) #mark the inctag as overriden in the current scope
 			
@@ -345,7 +345,7 @@ class DataFlowGenVisitor(Visitor):
 		else:
 			isImmediate = (not isinstance(left, cparse.Const)) and isinstance(right, cparse.Const)
 
-			print "DEBUG Binop %s being created" %node.op
+			print("DEBUG Binop %s being created" %node.op)
 			if isImmediate:
 				instr = InstBinopI(node.op, node.type.get_dec_string()) 
 				instr.input = left.accept(self)
@@ -364,7 +364,7 @@ class DataFlowGenVisitor(Visitor):
 			node.init.accept(self)
 
 	def vId(self, node):
-		if not self.signals.has_key(node.name):
+		if node.name not in self.signals:
 			graph_build_error("Variable %s has not been initialized." %node.name)
 			sys.exit(1)
 		signals = self.signals[node.name]
@@ -402,13 +402,13 @@ class DataFlowGenVisitor(Visitor):
 		if inctags == None:
 			inctags = self.inctags[-1]
 
-		if not inctags.has_key(name): 
+		if name not in inctags: 
 			inctags[name] = inctag = InstIncTag(signals)
 			self.instructions += [inctag]
 		inctag = inctags[name]	
 	
 		if inctag.was_overriden():
-			print "DEBUG Was overriden %s %s" %(name, inctag.overriden_flags)
+			print("DEBUG Was overriden %s %s" %(name, inctag.overriden_flags))
 			return signals
 		else:
 			return [inctag]
@@ -426,7 +426,7 @@ class DataFlowGenVisitor(Visitor):
 		#	if not found_steer:
 		#		i += 5
 		for st in list(reversed(self.trace_steers)):
-			print "DEBUG looking for %s in %s" %(name, st.created_signals)
+			print("DEBUG looking for %s in %s" %(name, st.created_signals))
 			if name in st.created_signals:
 				found_steer = True
 			if not found_steer:
@@ -438,7 +438,7 @@ class DataFlowGenVisitor(Visitor):
 	
 	def find_steer_instance(self, signal):
 		s=tuple(signal)
-		if self.steers[-1].has_key(s):
+		if s in self.steers[-1]:
 			return self.steers[-1][s]
 		else:
 			return None
@@ -448,24 +448,24 @@ class DataFlowGenVisitor(Visitor):
 		last_steer = None
 		steer_index = self.find_steer(name)
 
-		print "DEBUG adding steer to %s %d" %(name, steer_index)	
+		print("DEBUG adding steer to %s %d" %(name, steer_index)	)
 		previous_signal = signal
 		
 		
 		for st in self.trace_steers[steer_index:]:
 
-			if self.inctags_by_expr.has_key(st.expr):
-				print "DEBUG adding inctag to %s" %name
+			if st.expr in self.inctags_by_expr:
+				print("DEBUG adding inctag to %s" %name)
 				previous_signal = self.add_inctag(name, previous_signal, self.inctags_by_expr[st.expr])
 			else:
-				print "DEBUG NOT adding inctag to %s" %name
+				print("DEBUG NOT adding inctag to %s" %name)
 
-			print "sinal"
-			print "previous signal: %s" %previous_signal
+			print("sinal")
+			print("previous signal: %s" %previous_signal)
 			last_steer = self.find_steer_instance(previous_signal)
 
 			if last_steer != None:
-				print "repetido"
+				print("repetido")
 				last_steer.in_then_stmt = st.in_then_stmt
 					
 			else:			
@@ -477,7 +477,7 @@ class DataFlowGenVisitor(Visitor):
 
 				last_steer.input = previous_signal
 			previous_signal = last_steer.in_then_stmt and [last_steer.create_true()] or [last_steer.create_false()]
-			print previous_signal
+			print(previous_signal)
 
 		#if steer_index == 0:
 		#	self.steer.created_signals += [signal]
@@ -487,14 +487,14 @@ class DataFlowGenVisitor(Visitor):
 		
 	def adjust_signals(self, s_before, s_then, s_else):
 		signals = {}#semideepcopy(s_before)
-		print "DEBUG Adjust signals"	
+		print("DEBUG Adjust signals"	)
 		self.steer.in_then_stmt = True
 		for name in s_then:
-			if (not s_before.has_key(name)) or s_then[name] != s_before[name]:
+			if (name not in s_before) or s_then[name] != s_before[name]:
 				signals[name] = list(s_then[name])
 
 			else:
-				if s_else.has_key(name) and s_else[name] != s_before[name]:
+				if name in s_else and s_else[name] != s_before[name]:
 					#if the then clause didn't rewrite the signal, but the else clause did
 					#add steers to the original signals connecting to the True(then) port
 
@@ -502,15 +502,15 @@ class DataFlowGenVisitor(Visitor):
 					
 				else:
 					signals[name] = s_before[name]
-		print "DEBUG Adjust ELSE"
+		print("DEBUG Adjust ELSE")
 		self.steer.in_then_stmt = False
 		for name in s_else:
-			if (not s_before.has_key(name)) or s_else[name] != s_before[name]:
-				if not signals.has_key(name):
+			if (name not in s_before) or s_else[name] != s_before[name]:
+				if name not in signals:
 					signals[name] = []
 				signals[name] += s_else[name]
 			else:
-				if s_then.has_key(name) and s_then[name] != s_before[name]:
+				if name in s_then and s_then[name] != s_before[name]:
 					#if the else clause didn't rewrite the signal, but the then clause did
 					#add steers to the original signals conecting to the False(else) port
 					signals[name] += self.add_steer(s_before[name], name) 
@@ -528,25 +528,25 @@ class DataFlowGenVisitor(Visitor):
 
 
 	def adjust_inctags(self, signals_before, signals_then):
-		print "DEBUG ADJUST INCTAGS"
+		print("DEBUG ADJUST INCTAGS")
 		
-		print "DEBUG ADJUST INCTAGS %s %s %s" %(signals_before, signals_then, self.inctags[-1])	
+		print("DEBUG ADJUST INCTAGS %s %s %s" %(signals_before, signals_then, self.inctags[-1])	)
 		self.steer.in_then_stmt = False
 		for name in signals_then:
-			signal_written_in_then = not signals_before.has_key(name) or signals_before[name] != signals_then[name]
-			if self.inctags[-1].has_key(name) and signals_before.has_key(name):
-				print "DEBUG overridens %s" %self.inctags[-1][name].overriden_flags
+			signal_written_in_then = name not in signals_before or signals_before[name] != signals_then[name]
+			if name in self.inctags[-1] and name in signals_before:
+				print("DEBUG overridens %s" %self.inctags[-1][name].overriden_flags)
 				self.inctags[-1][name].reset_overriden() #Reset the inctag's override flag so the signal comes from it.
 				self.signals[name] = self.add_steer(signals_before[name], name)
 
-			if not self.inctags[-1].has_key(name) and signal_written_in_then:
+			if name not in self.inctags[-1] and signal_written_in_then:
 				self.signals[name] = self.add_steer(signals_then[name], name)
 				self.inctags[-1].pop(name) #remove the inctag we just created in add_steer, so it won't receive signals_then[name] for the second time in the next loop.
 
 				
 		for name in self.inctags[-1]:
 			inctag = self.inctags[-1][name]
-			if (not signals_before.has_key(name)) or signals_before[name] == signals_then[name]:
+			if (name not in signals_before) or signals_before[name] == signals_then[name]:
 
 				self.steer.in_then_stmt = True
 				signals = self.add_steer(signals_then[name], name)
@@ -561,14 +561,14 @@ class DataFlowGenVisitor(Visitor):
 		if self.loop_level > 0:
 			for name in self.inctags[-1]:
 				inctag = self.inctags[-1][name]
-				print "Pushing overridens %s %s" %(name, inctag.overriden_flags)
+				print("Pushing overridens %s %s" %(name, inctag.overriden_flags))
 				inctag.push_overriden()
 
 	def pop_itag_flags(self):
 		if self.loop_level > 0:
 			for name in self.inctags[-1]:
 				inctag = self.inctags[-1][name]
-				print "Popping overridens %s %s" %(name, inctag.overriden_flags)
+				print("Popping overridens %s %s" %(name, inctag.overriden_flags))
 				inctag.pop_overriden(len(self.trace_steers))
 
 
@@ -621,7 +621,7 @@ class DataFlowGenVisitor(Visitor):
 		
 		self.steer.created_signals = [] #clean the created signals for adjust_signals
 
-		if not self.inctags_by_expr.has_key(self.steer.expr): #if this is a loop condition, we will use adjust_inctags instead of adjust_signals
+		if self.steer.expr not in self.inctags_by_expr: #if this is a loop condition, we will use adjust_inctags instead of adjust_signals
 
 			self.signals = self.adjust_signals(signals_before, signals_then, signals_else)
 		
@@ -781,19 +781,19 @@ class DataFlowGenVisitor(Visitor):
 			i += 1
 			self.signals[n.name] = [instport]
 		
-			if self.loop_level > 0 and self.inctags[-1].has_key(n.name):
-				print "DEBUG has inctag %s" %n.name
+			if self.loop_level > 0 and n.name in self.inctags[-1]:
+				print("DEBUG has inctag %s" %n.name)
 				inctag = self.inctags[-1][n.name]
 				inctag.set_overriden(len(self.trace_steers))
 			
 			if len(self.trace_steers) > 0:
-				print "DEBUG Super Adding signal %s" %n.name
+				print("DEBUG Super Adding signal %s" %n.name)
 		                                                                                         
 				self.steer.created_signals += [n.name]
 		
 		
 		
-			print "DEBUG signals %s" %self.signals	
+			print("DEBUG signals %s" %self.signals	)
 	
 		#check if all local inputs have been declared as outputs
 		for inp in instr.input:
@@ -812,7 +812,4 @@ class DataFlowGenVisitor(Visitor):
 
 
 		
-
-
-
 

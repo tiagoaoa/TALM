@@ -180,8 +180,8 @@ class TalmVisitor(Visitor):
 		self.p('%s %s, %s' %(constinstr, node, node.value))
 
 	def vInstBinop(self, node):
-		if self.types.has_key(node.typestr):
-			if self.ops.has_key(node.op):
+		if node.typestr in self.types:
+			if node.op in self.ops:
 				left = self.get_sources(node.left)
 				right = self.get_sources(node.right)
 				self.p("%s%s %s, %s, %s " %(self.types[node.typestr], self.ops[node.op], node, left, right))
@@ -191,13 +191,13 @@ class TalmVisitor(Visitor):
 			raise NotImplementedError()
 
 	def vInstBinopI(self, node):
-		if self.types.has_key(node.typestr):
-			if self.ops.has_key(node.op):
+		if node.typestr in self.types:
+			if node.op in self.ops:
 				inp = self.get_sources(node.input)
 				immed = str(node.immed)
 				self.p("%s%si %s, %s, %s " %(self.types[node.typestr], self.ops[node.op], node, inp, immed))
 			else:
-				print "ERROR: %s not implemented" %(node.op)
+				print("ERROR: %s not implemented" %(node.op))
 				raise NotImplementedError()
 		else:
 			raise NotImplementedError()
@@ -286,5 +286,4 @@ class TalmVisitor(Visitor):
 	def vInstRetSnd(self, node):
 		sources = self.get_sources(node.oper)
 		self.p("retsnd %s[0], %s, %s" %(node.fname, sources, node.callgroup.name))
-
 

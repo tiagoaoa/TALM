@@ -55,15 +55,15 @@ class Compiler:
             self._compile_phase(cvisitors.ASTPrinterVisitor(ast_file))
 
         self._compile_phase(cvisitors.FlowControlVisitor())
-	self._compile_phase(libvisitor.LibPrinterVisitor(lib_file))
-	self._compile_phase(flow.DataFlowGenVisitor(asm_file, dot_file))
+        self._compile_phase(libvisitor.LibPrinterVisitor(lib_file))
+        self._compile_phase(flow.DataFlowGenVisitor(asm_file, dot_file))
 
 
 
     def _print_stats(self):
         """Prints the total number of errors/warnings from compilation."""
         
-        print "%d errors, %d warnings." % (self.total_errors, self.total_warnings)
+        print("%d errors, %d warnings." % (self.total_errors, self.total_warnings))
 
     def compile(self, code, lib_file, asm_file, show_ast, dot_file, show_comments):
         """Compiles the given code string to the given file object."""
@@ -72,21 +72,21 @@ class Compiler:
         try:
             self._do_compile(lib_file, asm_file, show_ast, dot_file, show_comments)
         except cparse.ParseError:
-            print "Errors encountered, bailing."
+            print("Errors encountered, bailing.")
             return 1            
         except Compiler.CompileError:
             self._print_stats()
-            print "Errors encountered, bailing."
+            print("Errors encountered, bailing.")
             return 1
         self._print_stats()
-        print "Compile successful."
+        print("Compile successful.")
         return 0
 
 def run_compiler():
     """Runs the command-line compiler."""
     
     if len(sys.argv) < 2:
-        print "Usage: c.py <source-file-1> [[source-file-2] ...] [-ast] [-annotate]"
+        print("Usage: c.py <source-file-1> [[source-file-2] ...] [-ast] [-annotate]")
         sys.exit(1)
 
     show_ast = 0
@@ -100,41 +100,41 @@ def run_compiler():
             if param == '-ast':
                 show_ast = 1
             elif param == '-annotate':
-                print "Annotated assembly generation enabled."
+                print("Annotated assembly generation enabled.")
                 show_comments = 1
             else:
-                print "Unknown option: %s" % param
+                print("Unknown option: %s" % param)
                 sys.exit(1)
             files.remove(param)
 
     for file in files:
         source_filename = file
-	lib_filename = file[:-2]+'_lib.c'
-	asm_filename = file[:-2]+'.fl'
-	dot_filename = file[:-2]+'.dot'
-        print "Compiling %s -> %s | %s | %s." % (source_filename, lib_filename, asm_filename, dot_filename)
+        lib_filename = file[:-2]+'_lib.c'
+        asm_filename = file[:-2]+'.fl'
+        dot_filename = file[:-2]+'.dot'
+        print("Compiling %s -> %s | %s | %s." % (source_filename, lib_filename, asm_filename, dot_filename))
         open_files = []
         ast_file = None
         if show_ast:
             ast_filename = file[:-2]+'.ast'
-            print "Outputting AST to %s." % ast_filename
+            print("Outputting AST to %s." % ast_filename)
             ast_file = open(ast_filename, 'w')
             open_files.append(ast_file)
         source = open(source_filename, 'r')
         code = source.read()
         source.close()
-	lib_file = open(lib_filename, 'w')
+        lib_file = open(lib_filename, 'w')
         open_files.append(lib_file)
-	asm_file = open(asm_filename, 'w')
+        asm_file = open(asm_filename, 'w')
         open_files.append(asm_file)
-	dot_file = open(dot_filename, 'w')
-	open_files.append(dot_file)
+        dot_file = open(dot_filename, 'w')
+        open_files.append(dot_file)
         retval = Compiler().compile(code, lib_file, asm_file, ast_file, dot_file, show_comments)
         for f in open_files:
             f.close()
         if retval != 0:
             sys.exit(retval)
-        print
+        print()
 
     sys.exit(retval)
 
